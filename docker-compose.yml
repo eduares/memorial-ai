@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: memorial-ai-db
+    restart: always
+
+    environment:
+      POSTGRES_DB: memorial_ai_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - memorial_ai_data:/var/lib/postgresql/data
+
+volumes:
+  memorial_ai_data:
