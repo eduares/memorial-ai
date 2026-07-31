@@ -1,0 +1,6 @@
+cff-version: 1.2.0
+title: Memorial AI
+authors:
+  - family-names: Sousa Soares
+    given-names: Eduardo
+message: "If you use this project, please cite it."
