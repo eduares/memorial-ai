@@ -17,16 +17,18 @@ from ui.chat import render_chat
 # =========================
 
 st.set_page_config(
-    page_title="Memorial AI",
+    page_title="Memorial Inteligente",
     page_icon="📄",
     layout="wide"
 )
+
 
 # =========================
 # LOAD CSS
 # =========================
 
 load_css()
+
 
 # =========================
 # SESSION STATE
@@ -41,11 +43,16 @@ if "document_loaded" not in st.session_state:
 if "extracted_data" not in st.session_state:
     st.session_state.extracted_data = None
 
+if "document_name" not in st.session_state:
+    st.session_state.document_name = None
+
+
 # =========================
 # SIDEBAR
 # =========================
 
 uploaded_file = render_sidebar()
+
 
 # =========================
 # MAIN HEADER
@@ -54,7 +61,7 @@ uploaded_file = render_sidebar()
 st.markdown(
     """
     <div class="main-title">
-        📄 Memorial AI
+        📄 Memorial Inteligente
     </div>
     """,
     unsafe_allow_html=True
@@ -69,33 +76,72 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
 # =========================
 # PROCESS DOCUMENT
 # =========================
 
-if uploaded_file is not None and not st.session_state.document_loaded:
+# Se nenhum arquivo estiver selecionado,
+# limpa o estado do documento atual
+if uploaded_file is None:
 
-    file_path = os.path.join(
-        UPLOAD_FOLDER,
-        uploaded_file.name
+    st.session_state.document_loaded = False
+    st.session_state.extracted_data = None
+    st.session_state.document_name = None
+    st.session_state.document_signature = None
+
+
+else:
+
+    # Cria uma identificação única para o arquivo
+    # usando nome e tamanho
+    document_signature = (
+        uploaded_file.name,
+        uploaded_file.size
     )
 
-    with open(file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
+    # Verifica se é um documento novo
+    new_document = (
+        document_signature
+        != st.session_state.document_signature
+    )
 
-    with st.spinner("Processando memorial..."):
+    if new_document:
 
-        ingest_document(
-            file_path,
+        # Limpa dados do memorial anterior
+        st.session_state.messages = []
+        st.session_state.extracted_data = None
+        st.session_state.document_loaded = False
+
+        file_path = os.path.join(
+            UPLOAD_FOLDER,
             uploaded_file.name
         )
 
-        extracted_data = extract_all_parameters()
+        with open(file_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
 
-        st.session_state.extracted_data = extracted_data
-        st.session_state.document_loaded = True
+        with st.spinner("Processando memorial..."):
 
-    st.success("Memorial processado com sucesso!")
+            # Ingestão do novo memorial
+            ingest_document(
+                file_path,
+                uploaded_file.name
+            )
+
+            # Extração dos parâmetros
+            extracted_data = extract_all_parameters(
+                uploaded_file.name
+            )
+
+            # Atualiza o estado
+            st.session_state.extracted_data = extracted_data
+            st.session_state.document_loaded = True
+            st.session_state.document_name = uploaded_file.name
+            st.session_state.document_signature = document_signature
+
+        st.success("Memorial processado com sucesso!")
+
 
 # =========================
 # PARAMETERS
@@ -105,13 +151,19 @@ if st.session_state.extracted_data:
 
     with st.expander("📌 Parâmetros Extraídos"):
 
-        st.json(st.session_state.extracted_data)
+        st.json(
+            st.session_state.extracted_data
+        )
+
 
 # =========================
 # CHAT HISTORY
 # =========================
 
-render_chat(st.session_state.messages)
+render_chat(
+    st.session_state.messages
+)
+
 
 # =========================
 # CHAT INPUT
@@ -140,7 +192,9 @@ if user_question:
 
         with st.spinner("Pensando..."):
 
-            response = ask_question(user_question)
+            response = ask_question(
+                user_question
+            )
 
         st.session_state.messages.append(
             {

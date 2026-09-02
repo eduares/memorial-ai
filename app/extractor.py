@@ -2,19 +2,32 @@ from retrieval import search_similar_documents
 from llm import generate_answer
 
 
-PARAMETERS = [
-    "Escopo técnico",
-    "Local de realização dos serviços",
-    "Data de visita técnica",
-    "Envio da proposta",
-    "Prazo de contrato",
-    "Prazo de pagamento",
-    "Prazo de medição",
-    "Multas",
-    "Previsão de início",
-    "Modelo de remuneração do contrato",
-    "Quantidade de equipes"
-]
+PARAMETERS = {
+    "escopo_tecnico": {
+        "label": "Escopo técnico",
+        "descricao": "Identificar os serviços e atividades que fazem parte do objeto da contratação."
+    },
+
+    "local_execucao": {
+        "label": "Local de execução",
+        "descricao": "Identificar a unidade, cidade, estado ou endereço onde os serviços serão executados."
+    },
+
+    "prazo_contrato": {
+        "label": "Prazo de contrato",
+        "descricao": "Identificar a duração ou vigência prevista para o contrato."
+    },
+
+    "quantidade_profissionais": {
+        "label": "Quantidade de profissionais",
+        "descricao": "Identificar a quantidade total de profissionais prevista para execução do contrato."
+    },
+
+    "prazo_pagamento": {
+        "label": "Prazo de pagamento",
+        "descricao": "Identificar o prazo ou condição de pagamento estabelecido no documento."
+    }
+}
 
 
 def extract_parameter(parameter):
