@@ -2,164 +2,184 @@
 
 ### Inteligência Artificial Aplicada à Automação do Processo Orçamentário
 
-> Protótipo desenvolvido como parte do Trabalho de Conclusão de Curso (TCC) do MBA em Data Science & Analytics.
+Protótipo desenvolvido como parte do Trabalho de Conclusão de Curso (TCC) do MBA em Data Science & Analytics.
 
----
+## Sobre o projeto
 
-> **⚠️ Status do Projeto**
->
-> Este projeto está em desenvolvimento como parte de um Trabalho de Conclusão de Curso (TCC). Novas funcionalidades e melhorias serão adicionadas ao longo da pesquisa.
----
+O Memorial Inteligente investiga a aplicação de Inteligência Artificial como ferramenta de apoio à interpretação de memoriais descritivos, permitindo recuperar informações relevantes e organizá-las em parâmetros de interesse para o processo de orçamentação.
 
-# Sobre o Projeto
+A solução utiliza **Retrieval-Augmented Generation (RAG)**, combinando recuperação semântica de trechos dos documentos com um modelo de linguagem executado localmente.
 
-A elaboração de orçamentos depende da análise de memoriais descritivos, documentos que apresentam informações técnicas, requisitos contratuais, escopo dos serviços e demais parâmetros necessários para a composição de um custo.
-
-Esse processo normalmente é realizado de forma manual, exigindo que o profissional consulte documentos extensos para localizar informações relevantes, tornando a atividade suscetível a erros e demandando um elevado tempo de análise.
-
-O Memorial AI foi desenvolvido com o objetivo de investigar a aplicação da Inteligência Artificial Generativa como ferramenta de apoio à interpretação desses documentos.
-
-A solução utiliza a abordagem Retrieval-Augmented Generation (RAG), combinando modelos de linguagem de grande porte (LLMs) com busca vetorial, permitindo recuperar trechos semanticamente relevantes dos memoriais antes da geração das respostas.
-
-O resultado é um sistema capaz de auxiliar profissionais na identificação das informações necessárias para elaboração de orçamentos técnicos.
-
----
-
-# Objetivo Geral
+## Objetivo
 
 Desenvolver uma solução baseada em Inteligência Artificial capaz de extrair, interpretar e organizar informações presentes em memoriais descritivos, apoiando o processo de elaboração de orçamentos.
 
----
+### Parâmetros avaliados
 
-# Objetivos Específicos
+- Escopo técnico
+- Local de execução
+- Prazo de contrato
+- Quantidade de profissionais
+- Prazo de pagamento
 
-- Extrair automaticamente o conteúdo textual de memoriais descritivos;
-- Processar e fragmentar os documentos em partes menores (chunks);
-- Gerar embeddings utilizando modelos de linguagem;
-- Armazenar os embeddings em banco vetorial PostgreSQL (pgvector);
-- Recuperar informações relevantes utilizando Retrieval-Augmented Generation (RAG);
-- Disponibilizar uma interface web para interação com os documentos;
-- Identificar automaticamente parâmetros utilizados durante a elaboração de orçamentos.
+## Evolução do projeto
 
----
+O desenvolvimento foi realizado de forma iterativa. A **REV00** corresponde à primeira versão utilizada para estabelecer a linha de base. A **REV01** incorpora os ajustes realizados após a análise da primeira etapa e foi utilizada na segunda etapa de experimentação.
 
-# Arquitetura da Solução
+### REV00 — Etapa 1
 
-O funcionamento do sistema ocorre em cinco etapas principais:
+A versão inicial contemplava carregamento de memoriais, extração de texto, fragmentação em chunks, geração de embeddings, armazenamento em PostgreSQL/pgvector, recuperação semântica, utilização do LLM para extração e interface em Streamlit.
+
+### REV01 — Etapa 2
+
+A versão utilizada na segunda etapa manteve a arquitetura geral e incorporou ajustes na extração de DOCX, reingestão, recuperação do escopo técnico, recuperação da quantidade de profissionais, recuperação do prazo de pagamento e regras de extração.
+
+## Arquitetura
 
 1. Upload do memorial descritivo;
-2. Extração do conteúdo textual;
-3. Geração dos embeddings;
-4. Armazenamento em banco vetorial PostgreSQL;
-5. Recuperação contextual via RAG para responder perguntas do usuário.
+2. Extração do conteúdo;
+3. Fragmentação em chunks;
+4. Geração dos embeddings;
+5. Armazenamento dos vetores e metadados no PostgreSQL/pgvector;
+6. Recuperação semântica ou estrutural dos trechos relevantes;
+7. Envio do contexto ao modelo de linguagem;
+8. Extração dos parâmetros ou resposta ao usuário;
+9. Apresentação dos resultados na interface.
 
-Um diagrama detalhado da arquitetura será disponibilizado na pasta `docs/arquitetura`.
+Os diagramas estão organizados em `docs/`.
 
----
-
-# Tecnologias Utilizadas
+## Tecnologias utilizadas
 
 - Python
 - Streamlit
+- Dockker / Docker Compose
 - PostgreSQL
 - pgvector
-- Docker
 - Ollama
 - Llama 3
 - Nomic Embed Text
 - Visual Studio Code
 
----
-
-# Estrutura do Projeto
+## Estrutura do projeto
 
 ```text
 app/
-database/
+├── ui/
+├── chatbot.py
+├── chunking.py
+├── config.py
+├── database.py
+├── embeddings.py
+├── extractor.py
+├── extractor_json.py
+├── ingestion.py
+├── llm.py
+├── main.py
+├── parser.py
+├── rag.py
+└── retrieval.py
+
 data/
-docker/
+├── processed/
+├── samples/
+└── uploads/
+
 docs/
+├── arquitetura/
+├── diagramas/
+├── imagens/
+└── resultados/
+    ├── Etapa 1/
+    ├── Etapa 2/
+    └── Tabelas/
+
 tests/
 ```
 
----
+A pasta `data/samples/` contém os memoriais sintéticos utilizados na experimentação. `uploads/` e `processed/` são destinadas aos arquivos gerados durante a execução.
 
-# Como Executar
+## Como executar
 
-## Pré-requisitos
+### Pré-requisitos
 
-- Python 3.11+
-- Docker Desktop
-- PostgreSQL
+- Python 3.11 ou superior
 - Ollama
+- Docker / Docker Compose
+- PostgreSQL com pgvector
 
-## Instalação
-
-Clone o repositório:
-
-```bash
-git clone https://github.com/usuario/memorial-ai.git
-```
-
-Crie um ambiente virtual:
+### Instalação
 
 ```bash
+git clone https://github.com/eduares/memorial-ai.git
 python -m venv .venv
-```
-
-Instale as dependências:
-
-```bash
 pip install -r requirements.txt
 ```
 
-Execute a aplicação:
+Configure as variáveis de ambiente conforme `.env.example` e execute:
 
 ```bash
 streamlit run app/main.py
 ```
 
----
+### Banco de dados
 
-# Resultados Atuais
+O PostgreSQL com extensão pgvector é executado por meio do Docker Compose, utilizando a imagem `pgvector/pgvector:pg16`.
 
-Atualmente o sistema é capaz de:
+Para iniciar o banco de dados:
 
-- realizar upload de memoriais descritivos;
-- extrair o conteúdo textual dos documentos;
-- gerar embeddings;
-- armazenar informações em banco vetorial;
-- responder perguntas utilizando RAG;
-- apresentar interface web para interação com os documentos.
+```bash
+docker compose up -d
 
-Os testes iniciais foram realizados utilizando memoriais descritivos sintéticos desenvolvidos especificamente para validação do protótipo.
+## Resultados da experimentação
 
----
+A solução foi avaliada em duas etapas utilizando 10 memoriais descritivos sintéticos e 5 parâmetros.
 
-# Limitações
+### Etapa 1 — REV00
 
-Embora o sistema já possua funcionalidades operacionais, a recuperação das informações ainda apresenta oportunidades de melhoria quanto à precisão das respostas.
+- 50 avaliações
+- 7 corretas
+- 19 parciais
+- 14 incorretas
+- 10 não aplicáveis
 
-Os experimentos atuais concentram-se na validação do método proposto utilizando documentos sintéticos, sendo prevista a realização de novos testes durante a evolução da pesquisa.
+Considerando os 40 casos aplicáveis, o percentual de classificações corretas foi de **17,50%**.
 
----
+### Etapa 2 — REV01
 
-# Trabalhos Futuros
+- 50 avaliações
+- 30 corretas
+- 6 parciais
+- 4 incorretas
+- 10 não aplicáveis
 
-- Melhorar a precisão da recuperação vetorial;
-- Automatizar completamente a identificação dos parâmetros orçamentários;
-- Integrar o sistema ao preenchimento automático da planilha de preços;
-- Avaliar o desempenho utilizando memoriais reais (quando autorizados);
-- Comparar diferentes modelos de embeddings e LLMs.
+Considerando os 40 casos aplicáveis, o percentual de classificações corretas foi de **75,00%**.
 
----
+Os memoriais utilizados foram produzidos especificamente para a experimentação. Os detalhes das avaliações estão em `docs/resultados/`.
 
-# Autor
+## Limitações
 
-**Eduardo Sousa Soares**
+O protótipo ainda apresenta limitações na recuperação e interpretação de informações, especialmente quando os dados estão incompletos, distribuídos em diferentes partes do documento ou apresentam contextos semelhantes.
 
-MBA em Data Science & Analytics
+Os resultados foram obtidos com documentos sintéticos e não representam, por si só, validação em ambiente produtivo.
 
-Trabalho de Conclusão de Curso
+## Trabalhos futuros
 
-2026
+- Aprimorar os mecanismos de recuperação e extração;
+- Realizar testes em ambiente produtivo;
+- Ampliar os parâmetros analisados;
+- Realizar novos testes com diferentes tipos de documentos;
+- Desenvolver uma saída organizada em tópicos ou blocos, contemplando informações gerais do material fornecido pelo cliente;
+- Evoluir a solução para uma arquitetura baseada em agentes especializados;
+- Desenvolver agentes para identificação de informações contratuais e apoio à composição de custos.
+
+## Documentação
+
+A pasta `docs/` reúne arquitetura, diagramas, imagens e resultados das etapas de experimentação.
+
+As referências bibliográficas e a fundamentação acadêmica permanecem no TCC e não são duplicadas no repositório.
+
+## Autor
+
+**Eduardo Sousa Soares**  
+MBA em Data Science & Analytics  
+Trabalho de Conclusão de Curso — 2026

@@ -1,3 +1,9 @@
+# ============================================================
+# EXTRACTOR - VERSÃO DE TESTE
+# ============================================================
+# Implementação simplificada utilizada para testes de extração.
+# A versão integrada da aplicação está em extractor_json.py.
+
 from retrieval import search_similar_documents
 from llm import generate_answer
 
@@ -29,7 +35,7 @@ PARAMETERS = {
     }
 }
 
-
+ # Realiza uma extração simplificada para testes.
 def extract_parameter(parameter):
     results = search_similar_documents(parameter)
 

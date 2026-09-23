@@ -1,0 +1,6 @@
+streamlit
+python-dotenv
+psycopg2-binary
+ollama
+PyMuPDF
+python-docx

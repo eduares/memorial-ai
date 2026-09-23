@@ -1,6 +1,10 @@
+# ============================================================
+# BARRA LATERAL
+# ============================================================
+# Disponibiliza o componente de upload dos memoriais descritivos.
 import streamlit as st
 
-
+# Cria a barra lateral e retorna o arquivo selecionado pelo usuário.
 def render_sidebar():
 
     with st.sidebar:

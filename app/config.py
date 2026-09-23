@@ -1,3 +1,9 @@
+# ============================================================
+# CONFIGURAÇÃO
+# ============================================================
+# Carrega as variáveis de ambiente utilizadas para configurar
+# diretórios e conexão com o banco de dados.
+
 import os
 from dotenv import load_dotenv
 

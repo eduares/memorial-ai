@@ -1,3 +1,11 @@
+# ============================================================
+# APLICAÇÃO PRINCIPAL
+# ============================================================
+# Ponto de entrada da interface Streamlit do Memorial Inteligente.
+# Coordena upload, ingestão, extração dos parâmetros e interação por chat.
+
+import os
+
 import os
 import streamlit as st
 
@@ -191,10 +199,11 @@ if user_question:
         )
 
         with st.spinner("Pensando..."):
-
             response = ask_question(
-                user_question
+                user_question,
+                st.session_state.document_name
             )
+
 
         st.session_state.messages.append(
             {

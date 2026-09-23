@@ -1,5 +1,10 @@
+# ============================================================
+# INTERFACE DE CHAT
+# ============================================================
+# Renderiza no Streamlit o histórico de mensagens do usuário e do assistente.
 import streamlit as st
 
+# Exibe as mensagens armazenadas na sessão da aplicação.
 
 def render_chat(messages):
 

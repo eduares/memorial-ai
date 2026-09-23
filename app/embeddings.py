@@ -1,6 +1,12 @@
+# ============================================================
+# EMBEDDINGS
+# ============================================================
+# Gera representações vetoriais dos textos utilizando o modelo
+# nomic-embed-text disponibilizado pelo Ollama.
+
 import ollama
 
-
+# Converte o texto em uma representação vetorial.
 def generate_embedding(text):
     response = ollama.embeddings(
         model="nomic-embed-text",

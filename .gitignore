@@ -43,15 +43,10 @@ __pycache__/
 Thumbs.db
 
 # ==========================
-# Dados Processados
+# Dados Gerados Durante a Execução
 # ==========================
 data/uploads/
 data/processed/
-
-# ==========================
-# Resultados Temporários
-# ==========================
-docs/resultados/
 
 # ==========================
 # Arquivos Grandes ou Sensíveis
@@ -60,7 +55,24 @@ docs/resultados/
 *.docx
 *.xlsx
 
+# Permitir memoriais sintéticos utilizados na experimentação
+!data/samples/*.docx
+
 # ==========================
-# Docker
+# Arquivos Grandes ou Sensíveis
 # ==========================
-docker/**/*.log
+*.pdf
+*.docx
+*.xlsx
+
+# Permitir memoriais sintéticos utilizados na experimentação
+!data/samples/*.docx
+
+# Permitir planilhas dos resultados da experimentação
+!docs/resultados/
+!docs/resultados/Etapa 1/
+!docs/resultados/Etapa 1/*.xlsx
+!docs/resultados/Etapa 2/
+!docs/resultados/Etapa 2/*.xlsx
+!docs/resultados/Tabelas/
+!docs/resultados/Tabelas/*.xlsx

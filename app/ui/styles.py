@@ -1,6 +1,11 @@
+# ============================================================
+# ESTILOS DA INTERFACE
+# ============================================================
+# Define o CSS utilizado para personalizar a interface do Streamlit.
+
 import streamlit as st
 
-
+# Injeta os estilos CSS personalizados na aplicação.
 def load_css():
 
     st.markdown(

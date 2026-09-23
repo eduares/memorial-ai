@@ -1,3 +1,10 @@
+# ============================================================
+# CHUNKING
+# ============================================================
+# Divide o texto extraído em blocos menores para posterior geração
+# de embeddings e recuperação semântica.
+# Divide o texto com sobreposição para preservar contexto entre chunks.
+
 def split_text(text, chunk_size=1200, overlap=200):
     chunks = []
 

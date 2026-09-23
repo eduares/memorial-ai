@@ -1,7 +1,14 @@
+# ============================================================
+# DATABASE
+# ============================================================
+# Centraliza a conexão com o PostgreSQL e a inserção dos documentos
+# e respectivos embeddings na tabela utilizada pelo protótipo.
+
+
 import psycopg2
-from config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
+from app.config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
 
-
+# Abre uma conexão com o banco configurado no ambiente.
 def get_connection():
     return psycopg2.connect(
         host=DB_HOST,
@@ -11,7 +18,7 @@ def get_connection():
         password=DB_PASSWORD
     )
 
-
+# Persiste conteúdo, metadados e embedding na tabela documents.
 def insert_document(content, metadata, embedding):
     try:
         conn = get_connection()
