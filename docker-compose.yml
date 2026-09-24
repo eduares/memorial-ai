@@ -2,20 +2,22 @@ version: '3.9'
 
 services:
   postgres:
+    # PostgreSQL com suporte à extensão pgvector
     image: pgvector/pgvector:pg16
     container_name: memorial-ai-db
     restart: always
-
+    # As credenciais são obtidas do arquivo .env local.
+    # O arquivo .env não deve ser versionado no Git.
     environment:
-      POSTGRES_DB: memorial_ai_db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
-
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    # Porta local 5433 -> porta 5432 do PostgreSQL no container
     ports:
       - "5433:5432"
-
+    # Volume persistente para os dados do banco
     volumes:
       - memorial_ai_data:/var/lib/postgresql/data
-
+# Volume utilizado para persistir os dados do PostgreSQL
 volumes:
   memorial_ai_data:
