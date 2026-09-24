@@ -1,6 +1,6 @@
-streamlit
-python-dotenv
-psycopg2-binary
-ollama
-PyMuPDF
-python-docx
+streamlit==1.57.0
+python-dotenv==1.2.2
+psycopg2-binary==2.9.13
+ollama==0.6.2
+PyMuPDF==1.27.2.3
+python-docx==1.2.0
