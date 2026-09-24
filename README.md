@@ -86,14 +86,84 @@ tests/
 
 # Como Executar
 
-## Pré-requisitos
+## Opção 1 — Docker (recomendado)
+
+Com essa opção, o Docker sobe o banco vetorial (**PostgreSQL + pgvector**) e a
+aplicação **Streamlit**. O **Ollama roda nativamente no host** (fora do Docker)
+para aproveitar a GPU da máquina — no macOS o Ollama em container roda apenas em
+CPU, o que torna o processamento muito mais lento.
+
+### Pré-requisitos
+
+- Docker Desktop (com Docker Compose)
+- [Ollama](https://ollama.com/download) instalado no host
+
+### Passos
+
+Clone o repositório:
+
+```bash
+git clone https://github.com/usuario/memorial-ai.git
+cd memorial-ai
+```
+
+Inicie o Ollama no host e baixe os modelos (apenas na primeira vez):
+
+```bash
+ollama serve            # deixe rodando (usa a GPU do host)
+ollama pull llama3
+ollama pull nomic-embed-text
+```
+
+Suba os serviços com Docker:
+
+```bash
+docker compose up --build
+```
+
+O que acontece automaticamente:
+
+1. `postgres` — sobe o PostgreSQL com a extensão **pgvector** e cria a tabela
+   `documents` (scripts em `database/`);
+2. `app` — sobe a aplicação Streamlit somente após o banco estar pronto. A
+   aplicação se conecta ao Ollama do host via `host.docker.internal:11434`.
+
+> A primeira execução do `ollama pull` é mais demorada porque os modelos (~5 GB)
+> são baixados. Nas próximas vezes o download é reaproveitado.
+
+Acesse a aplicação em:
+
+```
+http://localhost:8501
+```
+
+Para rodar em segundo plano:
+
+```bash
+docker compose up --build -d
+```
+
+Para parar os serviços:
+
+```bash
+docker compose down
+```
+
+Para parar e apagar todos os dados (banco e uploads):
+
+```bash
+docker compose down -v
+```
+
+## Opção 2 — Execução local (desenvolvimento)
+
+### Pré-requisitos
 
 - Python 3.11+
-- Docker Desktop
-- PostgreSQL
+- PostgreSQL com pgvector
 - Ollama
 
-## Instalação
+### Instalação
 
 Clone o repositório:
 
@@ -111,6 +181,12 @@ Instale as dependências:
 
 ```bash
 pip install -r requirements.txt
+```
+
+Configure as variáveis de ambiente (copie o exemplo):
+
+```bash
+cp .env.example .env
 ```
 
 Execute a aplicação:

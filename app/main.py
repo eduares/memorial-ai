@@ -193,7 +193,8 @@ if user_question:
         with st.spinner("Pensando..."):
 
             response = ask_question(
-                user_question
+                user_question,
+                st.session_state.document_name
             )
 
         st.session_state.messages.append(

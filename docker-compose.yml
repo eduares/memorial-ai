@@ -1,21 +1,62 @@
-version: '3.9'
-
 services:
+  # =========================
+  # Banco vetorial (PostgreSQL + pgvector)
+  # =========================
   postgres:
     image: pgvector/pgvector:pg16
     container_name: memorial-ai-db
     restart: always
-
     environment:
       POSTGRES_DB: memorial_ai_db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
-
     ports:
       - "5433:5432"
-
     volumes:
       - memorial_ai_data:/var/lib/postgresql/data
+      # Scripts .sql executados na 1ª inicialização, em ordem alfabética:
+      # create_pgvector.sql -> create_table.sql -> indexes.sql
+      - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d memorial_ai_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  # =========================
+  # Aplicação Streamlit (Memorial AI)
+  # =========================
+  # OBS.: O Ollama roda NATIVAMENTE no host (fora do Docker) para aproveitar a
+  # GPU da máquina (ex.: Metal no macOS). Antes de subir o stack, garanta que o
+  # Ollama esteja rodando no host e com os modelos baixados:
+  #   ollama serve
+  #   ollama pull llama3
+  #   ollama pull nomic-embed-text
+  app:
+    build: .
+    container_name: memorial-ai-app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: memorial_ai_db
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      # Aponta para o Ollama rodando no host (Docker Desktop resolve
+      # host.docker.internal automaticamente; extra_hosts cobre hosts Linux).
+      OLLAMA_HOST: http://host.docker.internal:11434
+    ports:
+      - "8501:8501"
+    volumes:
+      - uploads_data:/app/data/uploads
+      - processed_data:/app/data/processed
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   memorial_ai_data:
+  uploads_data:
+  processed_data:
