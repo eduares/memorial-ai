@@ -1,16 +1,39 @@
 # ============================================================
-# EXTRAÇÃO ESTRUTURADA DE PARÂMETROS
+# EXTRAÇÃO DOS PARÂMETROS
 # ============================================================
-# Define os parâmetros avaliados no protótipo e coordena a recuperação
-# de contexto e a interpretação pelo modelo de linguagem.
+# Este módulo coordena a extração estruturada das informações
+# relevantes dos memoriais descritivos.
 #
-# A lógica diferencia os parâmetros que utilizam buscas específicas
-# dos que utilizam busca semântica geral.
+# O processo utiliza:
+# - recuperação de trechos relevantes do documento;
+# - construção de um contexto;
+# - prompts específicos para cada parâmetro;
+# - modelo de linguagem para interpretar o contexto;
+# - normalização da resposta obtida.
+#
+# Os parâmetros analisados nesta versão são:
+# - Escopo técnico;
+# - Local de execução;
+# - Prazo de contrato;
+# - Quantidade de profissionais;
+# - Prazo de pagamento.
+
 import json
 import streamlit as st
 from app.retrieval import search_similar_documents, search_scope_documents
 from app.llm import generate_extraction
 
+
+# ============================================================
+# PARÂMETROS ANALISADOS
+# ============================================================
+# Define os parâmetros que serão extraídos dos memoriais.
+#
+# Cada parâmetro possui:
+# - um nome utilizado internamente pela aplicação;
+# - um rótulo apresentado ao usuário;
+# - uma descrição utilizada para orientar a recuperação
+#   das informações.
 
 PARAMETERS = {
     "escopo_tecnico": {
@@ -39,18 +62,36 @@ PARAMETERS = {
     }
 }
 
-# Padroniza a resposta retornada pelo modelo para a interface.
+# ============================================================
+# NORMALIZAÇÃO DA RESPOSTA
+# ============================================================
+# Padroniza as respostas produzidas pelo modelo de linguagem.
+#
+# Essa etapa:
+# - identifica quando o modelo não encontrou a informação;
+# - remove os prefixos dos parâmetros quando eles aparecem
+#   desnecessariamente na resposta;
+# - mantém o conteúdo relevante retornado pelo modelo.
+
 def normalize_parameter_answer(parameter_name, answer):
 
+    # Remove espaços em branco no início e no final da resposta.
     answer = answer.strip()
 
-    # Informação não encontrada
+    # --------------------------------------------------------
+    # INFORMAÇÃO NÃO ENCONTRADA
+    # --------------------------------------------------------
+    # Verifica diferentes formas utilizadas pelo modelo para
+    # indicar que a informação não foi encontrada.
+
+
     if (
         "não encontrado" in answer.lower()
         or "não encontrada" in answer.lower()
     ):
         return "Informação não encontrada."
 
+    # Prefixos esperados para cada parâmetro.
     prefixes = {
         "escopo_tecnico": "Escopo técnico:",
         "local_execucao": "Local de execução:",
@@ -59,33 +100,59 @@ def normalize_parameter_answer(parameter_name, answer):
         "prazo_pagamento": "Prazo de pagamento:"
     }
 
+    # Obtém o prefixo correspondente ao parâmetro analisado.
     prefix = prefixes.get(parameter_name)
 
+    # Remove o prefixo caso o modelo tenha incluído essa
+    # identificação no início da resposta.
     if prefix and answer.lower().startswith(prefix.lower()):
         answer = answer[len(prefix):].strip()
 
     return answer
 
- # Recupera o contexto adequado e extrai um parâmetro específico.
+# ============================================================
+# EXTRAÇÃO DE UM PARÂMETRO
+# ============================================================
+# Executa o processo completo de extração de um parâmetro:
+#
+# 1. Identifica a estratégia de busca adequada;
+# 2. Recupera os trechos relevantes;
+# 3. Exibe informações de diagnóstico;
+# 4. Constrói o contexto;
+# 5. Seleciona o prompt específico;
+# 6. Envia o prompt ao LLM;
+# 7. Normaliza a resposta;
+# 8. Retorna o resultado.
+
 def extract_parameter(parameter_name, parameter_config, arquivo):
     print("ENTROU NO EXTRACT_PARAMETER")
 
+    # Exibe na interface qual parâmetro está sendo processado.
     st.write(f"🔎 Processando parâmetro: {parameter_config['label']}")
 
+    # Obtém o nome e a descrição do parâmetro
     label = parameter_config["label"]
     descricao = parameter_config["descricao"]
 
 
-    # ============================================================
-    # BUSCA
-    # ============================================================
+    # ========================================================
+    # BUSCA DOS TRECHOS RELEVANTES
+    # ========================================================
+    # A estratégia de recuperação varia conforme o parâmetro.
+    #
+    # Alguns parâmetros possuem consultas específicas,
+    # desenvolvidas durante a experimentação da REV01.
 
     if parameter_name == "escopo_tecnico":
 
+        # Utiliza uma recuperação estrutural específica para
+        # localizar seções relacionadas ao escopo do documento.
         results = search_scope_documents(arquivo)
 
     elif parameter_name == "quantidade_profissionais":
 
+        # Consulta direcionada a diferentes formas de descrição
+        # da quantidade e composição da equipe.
         query = """
 Quantidade de profissionais.
 Número total de profissionais.
@@ -107,6 +174,8 @@ Total de profissionais previstos para execução dos serviços.
             limit=8
         )
 
+    # Consulta direcionada a termos relacionados a pagamento,
+    # faturamento, medição e aprovação.
     elif parameter_name == "prazo_pagamento":
 
         query = """
@@ -135,12 +204,21 @@ Aprovação da medição e pagamento.
 
     else:
 
+        # Para os demais parâmetros, a consulta é construída
+        # utilizando o rótulo e a descrição do parâmetro.
         query = f"{label}. {descricao}"
         results = search_similar_documents(query, arquivo)
 
-    # ============================================================
+    # ========================================================
     # DIAGNÓSTICO DOS CHUNKS RECUPERADOS
-    # ============================================================
+    # ========================================================
+    # Exibe informações dos resultados recuperados para auxiliar
+    # na validação do mecanismo de busca durante os testes.
+    #
+    # São apresentados:
+    # - conteúdo do chunk;
+    # - metadados;
+    # - distância, quando disponível.
 
     print("\n========================================")
     print(f"PARÂMETRO: {label}")
@@ -155,12 +233,17 @@ Aprovação da medição e pagamento.
         print("\nMETADATA:")
         print(result[1])
 
+        # Verifica se existe um terceiro elemento contendo
+        # a distância calculada durante a recuperação.
         if len(result) > 2:
             print("\nDISTÂNCIA:")
             print(result[2])
-    # ============================================================
-    # MONTA O CONTEXTO PARA O LLM
-    # ============================================================
+
+    # ========================================================
+    # CONSTRUÇÃO DO CONTEXTO
+    # ========================================================
+    # Combina os conteúdos recuperados em um único texto que
+    # será encaminhado ao modelo de linguagem.
 
     if results:
 
@@ -169,14 +252,22 @@ Aprovação da medição e pagamento.
             for result in results
         )
 
+
     else:
 
+        # Define um contexto explícito quando nenhum trecho
+        # relevante é recuperado.
         context = "Nenhuma informação relevante foi encontrada."
 
-    
-    # ============================================================
-    # PROMPT
-    # ============================================================
+
+    # ========================================================
+    # CONSTRUÇÃO DO PROMPT
+    # ========================================================
+    # Seleciona as instruções específicas de acordo com o
+    # parâmetro que está sendo extraído.
+    #
+    # As regras abaixo são parte da lógica experimental da REV01
+    # e orientam o LLM a utilizar somente o contexto recuperado.
 
     if parameter_name == "escopo_tecnico":
 
@@ -311,6 +402,10 @@ Informação não encontrada.
 
     else:
 
+        # Prompt genérico utilizado para os demais parâmetros.
+        # A instrução orienta o modelo a retornar somente a
+        # informação presente no contexto recuperado.
+
         prompt = f"""
 Você é um extrator de informações de memoriais descritivos.
 
@@ -334,15 +429,22 @@ Se a informação não estiver no contexto, retorne exatamente:
 Informação não encontrada.
 """
 
-    # ============================================================
-    # GERA RESPOSTA COM O LLM
-    # ============================================================
-
+    # ========================================================
+    # GERAÇÃO DA RESPOSTA PELO LLM
+    # ========================================================
+    # Envia o prompt construído ao modelo de linguagem por meio
+    # da função generate_extraction(), responsável pela
+    # comunicação com o Ollama.
 
     answer = generate_extraction(
         prompt
     )
 
+    # ========================================================
+    # NORMALIZAÇÃO DA RESPOSTA
+    # ========================================================
+    # Padroniza o resultado retornado pelo modelo antes de
+    # disponibilizá-lo para as demais partes da aplicação.
     answer = normalize_parameter_answer(
         parameter_name,
         answer
@@ -350,19 +452,31 @@ Informação não encontrada.
 
     return answer
 
-# Executa a extração para todos os parâmetros definidos.
+# ============================================================
+# EXTRAÇÃO DE TODOS OS PARÂMETROS
+# ============================================================
+# Executa a extração dos parâmetros definidos no dicionário
+# PARAMETERS.
+#
+# Cada parâmetro é processado individualmente e o resultado
+# é armazenado em um dicionário.
+
 def extract_all_parameters(arquivo):
 
     results = {}
 
+    # Percorre todos os parâmetros configurados.
     for parameter_name, parameter_config in PARAMETERS.items():
 
+        # Executa a extração do parâmetro atual.
         result = extract_parameter(
             parameter_name,
             parameter_config,
             arquivo
         )
 
+        # Armazena o resultado utilizando o nome interno
+        # do parâmetro como chave.
         results[parameter_name] = result
 
     return results
@@ -371,11 +485,15 @@ def extract_all_parameters(arquivo):
 # ============================================================
 # TESTE DIRETO
 # ============================================================
+# Permite executar o processo completo de extração diretamente
+# pelo terminal, sem depender da execução principal do Streamlit.
 
 if __name__ == "__main__":
 
+    # Define o memorial utilizado no teste direto.
     arquivo = "Empresa 7.docx"
 
+    # Executa a extração de todos os parâmetros.
     resultado = extract_all_parameters(
         arquivo
     )
@@ -385,6 +503,7 @@ if __name__ == "__main__":
     print("RESULTADO FINAL")
     print("========================================")
 
+    # Exibe o resultado final em formato JSON.
     print(
         json.dumps(
             resultado,
