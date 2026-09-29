@@ -76,7 +76,6 @@ app/
 ├── llm.py
 ├── main.py
 ├── parser.py
-├── rag.py
 └── retrieval.py
 
 data/
